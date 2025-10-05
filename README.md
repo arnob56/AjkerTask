@@ -77,3 +77,4 @@ notionlite_flask/
 ## Notes
 - This is a production-ready *starter*. For true production, use Gunicorn/uvicorn behind a reverse proxy and a managed Postgres.
 - You can wrap this web app as a desktop app using Electron/Tauri, or as a mobile app via a WebView wrapper.
+Some problems may found
