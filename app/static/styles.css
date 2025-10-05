@@ -1,0 +1,7 @@
+/* Minimal tweaks on top of Bootstrap */
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+.navbar .btn { white-space: nowrap; }
+.list-group-item-action { cursor: pointer; }
+.card { border-radius: 1rem; }
+.btn { border-radius: 0.75rem; }
+.form-control, .form-select { border-radius: 0.75rem; }
