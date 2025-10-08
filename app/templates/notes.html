@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">Notes</h4>
+  <div>
+    <a class="btn btn-primary" href="{{ url_for('main.note_new') }}"><i class="bi bi-plus-lg"></i> New Note</a>
+  </div>
+</div>
+
+<form class="mb-3" method="get">
+  <div class="input-group">
+    <input type="text" name="q" class="form-control" placeholder="Search notes" value="{{ q or '' }}">
+    <button class="btn btn-outline-primary"><i class="bi bi-search"></i></button>
+  </div>
+</form>
+
+{% if create or edit %}
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+          {{ form.title.label(class_="form-label") }}
+          {{ form.title(class_="form-control", placeholder="Note title") }}
+        </div>
+        <div class="mb-3">
+          {{ form.content.label(class_="form-label") }}
+          {{ form.content(class_="form-control", id="md-editor") }}
+        </div>
+        {{ form.submit(class_="btn btn-primary") }}
+        <a href="{{ url_for('main.notes') }}" class="btn btn-secondary">Cancel</a>
+        {% if edit and note %}
+        <form class="d-inline float-end" method="post" action="{{ url_for('main.note_delete', note_id=note.id) }}">
+          {{ csrf_token() }}
+          <button class="btn btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+        </form>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+  <script>
+    // Initialize SimpleMDE on the content textarea
+    const textarea = document.getElementById('md-editor');
+    if (textarea) {
+      new SimpleMDE({ element: textarea, spellChecker: false, status: false });
+    }
+  </script>
+{% else %}
+  {% if notes %}
+    <div class="list-group">
+      {% for n in notes %}
+      <a class="list-group-item list-group-item-action" href="{{ url_for('main.note_edit', note_id=n.id) }}">
+        <div class="d-flex w-100 justify-content-between">
+          <h6 class="mb-1">{{ n.title or 'Untitled' }}</h6>
+          <small class="text-muted">{{ n.updated_at.strftime('%b %d, %Y') }}</small>
+        </div>
+        <p class="mb-1 text-truncate">{{ n.content|striptags }}</p>
+      </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-muted">No notes found.</div>
+  {% endif %}
+{% endif %}
+{% endblock %}
