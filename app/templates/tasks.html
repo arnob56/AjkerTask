@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
   <h4 class="mb-0">Tasks</h4>
   <div class="d-flex gap-2">
@@ -16,23 +17,28 @@
 <form class="mb-3" method="get">
   <div class="input-group">
     <input type="text" name="q" class="form-control" placeholder="Search tasks" value="{{ q or '' }}">
-    <button class="btn btn-outline-primary"><i class="bi bi-search"></i></button>
+    <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
   </div>
 </form>
 
+{# ---------- Create or Edit form block ---------- #}
 {% if create or edit %}
   <div class="card shadow-sm">
     <div class="card-body">
-      <form method="post">
-        {{ form.hidden_tag() }}
+      {# Make the action explicit so WTForms knows where we are posting #}
+      <form method="post" action="{% if create %}{{ url_for('main.task_new') }}{% else %}{{ url_for('main.task_edit', task_id=task.id) }}{% endif %}">
+        {{ form.hidden_tag() }} {# includes CSRF hidden input and other hidden fields #}
+
         <div class="mb-3">
           {{ form.title.label(class_="form-label") }}
           {{ form.title(class_="form-control", placeholder="Task title") }}
         </div>
+
         <div class="mb-3">
           {{ form.description.label(class_="form-label") }}
           {{ form.description(class_="form-control", rows=4, placeholder="Description (optional)") }}
         </div>
+
         <div class="row g-3 mb-3">
           <div class="col-md-4">
             {{ form.due_date.label(class_="form-label") }}
@@ -49,41 +55,54 @@
             </div>
           </div>
         </div>
+
         {{ form.submit(class_="btn btn-primary") }}
         <a href="{{ url_for('main.tasks') }}" class="btn btn-secondary">Cancel</a>
-        {% if edit and task %}
-        <form class="d-inline float-end" method="post" action="{{ url_for('main.task_delete', task_id=task.id) }}">
-          {{ csrf_token() }}
-          <button class="btn btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
-        </form>
-        {% endif %}
       </form>
+
+      {# --- Place the Delete button OUTSIDE of the above form. No nested forms! --- #}
+      {% if edit and task %}
+        <form class="d-inline float-end mt-2" method="post" action="{{ url_for('main.task_delete', task_id=task.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Delete</button>
+        </form>
+      {% endif %}
     </div>
   </div>
+
+{# ---------- Listing page ---------- #}
 {% else %}
   {% if tasks %}
     <ul class="list-group">
       {% for t in tasks %}
       <li class="list-group-item d-flex align-items-center justify-content-between">
         <div>
+          {# Toggle completed (small POST form) #}
           <form class="d-inline" method="post" action="{{ url_for('main.task_toggle', task_id=t.id) }}">
-            {{ csrf_token() }}
-            <button class="btn btn-sm btn-outline-success me-2" title="Toggle complete">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-outline-success me-2" title="Toggle complete" type="submit">
               {% if t.done %}<i class="bi bi-check2-circle"></i>{% else %}<i class="bi bi-circle"></i>{% endif %}
             </button>
           </form>
+
           <strong class="{% if t.done %}text-decoration-line-through text-muted{% endif %}">{{ t.title }}</strong>
-          {% if t.due_date %}<span class="badge text-bg-secondary ms-2">Due {{ t.due_date.strftime('%b %d, %Y') }}</span>{% endif %}
+          {% if t.due_date %}
+            <span class="badge text-bg-secondary ms-2">Due {{ t.due_date.strftime('%b %d, %Y') }}</span>
+          {% endif %}
           <span class="badge text-bg-{{ 'danger' if t.priority=='high' else 'warning' if t.priority=='medium' else 'secondary' }} ms-1">{{ t.priority|capitalize }}</span>
+
           {% if t.description %}
             <div class="small text-muted mt-1">{{ t.description }}</div>
           {% endif %}
         </div>
+
         <div class="d-flex gap-2">
           <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.task_edit', task_id=t.id) }}"><i class="bi bi-pencil-square"></i></a>
+
+          {# Delete form for each task - includes CSRF hidden input using csrf_token() #}
           <form method="post" action="{{ url_for('main.task_delete', task_id=t.id) }}">
-            {{ csrf_token() }}
-            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i></button>
           </form>
         </div>
       </li>
@@ -93,4 +112,5 @@
     <div class="text-muted">No tasks found.</div>
   {% endif %}
 {% endif %}
+
 {% endblock %}
