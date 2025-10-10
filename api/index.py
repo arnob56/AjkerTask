@@ -1,9 +1,11 @@
-from flask import Flask
+# api/index.py
+from app.wsgi import app  # Import your Flask app instance
 
-app = Flask(__name__)
+# Optional test route to verify deployment
+@app.route("/ping")
+def ping():
+    return {"message": "pong"}
 
-@app.route('/')
-def home():
-    return "Flask on Vercel works with wsgi.py!"
-
-#
+# Local run support
+if __name__ == "__main__":
+    app.run(debug=True)
